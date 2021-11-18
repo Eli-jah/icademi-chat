@@ -102,3 +102,11 @@ dist
 
 # TernJS port file
 .tern-port
+
+.history
+
+# Docker
+Dockerfile
+docker-compose.yml
+*.dockerfile
+etc/
