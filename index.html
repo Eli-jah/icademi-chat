@@ -285,7 +285,7 @@
       // Chat history updated
       socket.on('chat-history-updated', chatHistory => {
         // console.log(chatHistory);
-        // messageList.innerHTML = '';
+        messageList.innerHTML = '';
         if (chatHistory.length > 0) {
           chatHistory.forEach(chat => {
             let messageItem = document.createElement('p');
