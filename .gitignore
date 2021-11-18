@@ -104,6 +104,7 @@ dist
 .tern-port
 
 .history
+.DS_Store
 
 # Docker
 Dockerfile
