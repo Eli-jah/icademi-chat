@@ -72,6 +72,11 @@ io.on("connection", (socket) => {
       });
   });
 
+  // Fetch contact list
+  socket.on("fetch-contact-list", (userinfo) => {
+    updateContactList(socket, userinfo);
+  });
+
   // Recieve message
   socket.on("message", (data, callback) => {
     // console.log(data);

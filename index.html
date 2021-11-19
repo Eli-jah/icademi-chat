@@ -156,6 +156,64 @@
         console.log('Connected to socket ...');
       }
 
+      if (window.localStorage) {
+        // initialize user infomation
+        userinfo = JSON.parse(window.localStorage.getItem('userinfo'));
+        // console.log(userinfo);
+        // console.log(typeof userinfo);
+        if (userinfo && userinfo.name) {
+          loginArea.style = 'display: none';
+          messageArea.style = 'display: block';
+          // Add welcome message
+          welcomeArea.style = 'display: block';
+          welcomeMessage.textContent = `Hello, ${userinfo.name}`;
+          socket.emit('fetch-contact-list', userinfo);
+        }
+
+        // initialize contact list
+        // let contacts = JSON.parse(window.localStorage.getItem('contacts'));
+        // contactCollection = {};
+        // contactList.innerHTML = '';
+        // // console.log(contacts);
+        // // console.log(typeof contacts);
+        // if (contacts && contacts.length > 0) {
+        //   contacts.forEach(contact => {
+        //     contactCollection[`${contact.type}-${contact.id}`] = contact;
+        //     let contactLi = document.createElement('li');
+        //     contactLi.setAttribute('class', 'collection-item');
+        //     contactLi.innerHTML = `<a href="javascript:void(0)" class="contact-item" data-tag="${contact.type}-${contact.id}"><h6 class="center" contact-id="${contact.id}">${contact.name}</h6></a>`;
+        //     // contactList.insertBefore(contactLi, contactList.lastChild);
+        //     contactList.appendChild(contactLi);
+        //   });
+        //   contactList.childNodes.forEach(li => {
+        //     // li.childNodes[0].onclick = function () {
+        //     li.firstChild.onclick = function () {
+        //       // console.log(this.getAttribute('data-tag'));
+        //       currentContact = contactCollection[this.getAttribute('data-tag')];
+        //       console.log(`Current contact ID: ${currentContact.id}`);
+        //       messageList.innerHTML = '';
+        //       socket.emit('fetch-chat-history', {
+        //         sender: userinfo,
+        //         recipient: currentContact,
+        //       });
+        //     }
+        //   });
+        // }
+
+        // initialize current contact chat history
+        // currentContact = JSON.parse(window.localStorage.getItem('current_contact'));
+        // // console.log(currentContact);
+        // // console.log(typeof currentContact);
+        // if (userinfo && currentContact && currentContact.id) {
+        //   console.log(`Current contact ID: ${currentContact.id}`);
+        //   messageList.innerHTML = '';
+        //   socket.emit('fetch-chat-history', {
+        //     sender: userinfo,
+        //     recipient: currentContact,
+        //   });
+        // }
+      }
+
       // Submit login form
       loginForm.addEventListener('submit', event => {
         event.preventDefault();
@@ -183,8 +241,7 @@
             // socket.join(userinfo.type + '-' + userinfo.id);
             // updateContactList(userinfo);
             if (window.localStorage) {
-              let storage = window.localStorage;
-              storage.setItem('userinfo', JSON.stringify(userinfo));
+              window.localStorage.setItem('userinfo', JSON.stringify(userinfo));
             } else {
               userinfoContainer.setAttribute('data-content', JSON.stringify(userinfo));
             }
@@ -242,6 +299,10 @@
       // }
       socket.on('contact_list_updated', (contacts) => {
         // console.log(contacts);
+        // console.log(typeof contacts);
+        // if (window.localStorage) {
+        //   window.localStorage.setItem('contacts', JSON.stringify(contacts));
+        // }
         contactCollection = {};
         contactList.innerHTML = '';
         contacts.forEach(contact => {
@@ -255,6 +316,14 @@
         if (contacts.length > 0) {
           currentContact = contacts[0];
           console.log(`Current contact ID: ${currentContact.id}`);
+          // if (window.localStorage) {
+          //   window.localStorage.setItem('current_contact', JSON.stringify(currentContact));
+          // }
+          messageList.innerHTML = '';
+          socket.emit('fetch-chat-history', {
+            sender: userinfo,
+            recipient: currentContact,
+          });
         }
         contactList.childNodes.forEach(li => {
           // li.childNodes[0].onclick = function () {
@@ -262,6 +331,9 @@
             // console.log(this.getAttribute('data-tag'));
             currentContact = contactCollection[this.getAttribute('data-tag')];
             console.log(`Current contact ID: ${currentContact.id}`);
+            // if (window.localStorage) {
+            //   window.localStorage.setItem('current_contact', JSON.stringify(currentContact));
+            // }
             messageList.innerHTML = '';
             socket.emit('fetch-chat-history', {
               sender: userinfo,
@@ -305,8 +377,7 @@
               // console.log(response);
               if (response.status == 200) {
                 if (window.localStorage) {
-                  let storage = window.localStorage;
-                  storage.clear();
+                  window.localStorage.clear();
                 } else {
                   userinfoContainer.setAttribute('data-content', '');
                 }
@@ -316,23 +387,22 @@
           }
         }
       }
-      window.onbeforeunload = function () {
-        confirm('Are you sure to log out?');
-      }
-      window.onunload = function () {
-        if (userinfo.token) {
-          socket.emit('logout', userinfo, (response) => {
-            if (window.localStorage) {
-              let storage = window.localStorage;
-              // let userinfo = JSON.parse(storage.getItem('userinfo'));
-              storage.clear();
-            } else {
-              // let userinfo = JSON.parse(userinfoContainer.getAttribute('data-content'));
-              userinfoContainer.setAttribute('data-content', '');
-            }
-          });
-        }
-      }
+      // window.onbeforeunload = function () {
+      //   confirm('Are you sure to log out?');
+      // }
+      // window.onunload = function () {
+      //   if (userinfo.token) {
+      //     socket.emit('logout', userinfo, (response) => {
+      //       if (window.localStorage) {
+      //         // let userinfo = window.localStorage.getItem('userinfo');
+      //         window.localStorage.clear();
+      //       } else {
+      //         // let userinfo = JSON.parse(userinfoContainer.getAttribute('data-content'));
+      //         userinfoContainer.setAttribute('data-content', '');
+      //       }
+      //     });
+      //   }
+      // }
     })();
   </script>
 </body>
