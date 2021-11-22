@@ -23,6 +23,7 @@ const axiosInstance = axios.create({
   // }
 });
 
+let users = {};
 let userinfo = {};
 let contactList = [];
 
@@ -49,15 +50,21 @@ io.on("connection", (socket) => {
       .then(function (response) {
         // console.log(response.data.data);
         userinfo = response.data.data;
+        users[userinfo.ws_token] = userinfo;
+        // console.log(users);
         console.log(`User ${userinfo.name} login.`);
         updateContactList(socket, userinfo);
         // Emit login_success
         // socket.emit('login_success', userinfo);
         if (typeof callback === "function") {
+          let data = {
+            name: userinfo.name,
+            ws_token: userinfo.ws_token,
+          };
           callback({
             status: 200,
             message: "Success",
-            data: userinfo,
+            data: data,
           });
         }
       })
@@ -70,6 +77,24 @@ io.on("connection", (socket) => {
           });
         }
       });
+  });
+
+  // Initialize to fetch userinfo & contact list
+  socket.on("initialize", (userinfo, callback) => {
+    // console.log(users);
+    if (
+      userinfo.ws_token &&
+      users[userinfo.ws_token] &&
+      typeof callback === "function"
+    ) {
+      userinfo = users[userinfo.ws_token];
+      // console.log(userinfo);
+      callback({
+        name: userinfo.name,
+        ws_token: userinfo.ws_token,
+      });
+      updateContactList(socket, userinfo);
+    }
   });
 
   // Fetch contact list
@@ -117,8 +142,13 @@ io.on("connection", (socket) => {
 
   // Fetch chat history
   socket.on("fetch-chat-history", (data) => {
-    if (data.sender.ws_token && data.recipient.id) {
-      let sender = data.sender;
+    if (
+      data.sender.ws_token &&
+      users[data.sender.ws_token] &&
+      data.recipient.id
+    ) {
+      // let sender = data.sender;
+      let sender = users[data.sender.ws_token];
       let recipient = data.recipient;
 
       axiosInstance
@@ -144,7 +174,8 @@ io.on("connection", (socket) => {
   // Logout
   socket.on("logout", (userinfo, callback) => {
     // console.log(userinfo.token);
-    if (userinfo.token) {
+    if (userinfo.ws_token && users[userinfo.ws_token]) {
+      userinfo = users[userinfo.ws_token];
       axiosInstance
         .post(
           "passport/logout",
@@ -175,6 +206,7 @@ io.on("connection", (socket) => {
             });
           }
         });
+      delete users[userinfo.ws_token];
     }
   });
 
@@ -256,16 +288,19 @@ async function sendMessage(message, sender, recipient) {
 // Emit event chat-history-updated
 async function updateChatHistory(chatHistory, sender, recipient) {
   // console.log(sender);
-  if (sender.type == "teacher") {
-    io.to("teacher-" + sender.id + "-student-" + recipient.id).emit(
-      "chat-history-updated",
-      chatHistory
-    );
-  } else {
-    io.to("teacher-" + recipient.id + "-student-" + sender.id).emit(
-      "chat-history-updated",
-      chatHistory
-    );
+  if (sender.ws_token && users[sender.ws_token]) {
+    sender = users[sender.ws_token];
+    if (sender.type == "teacher") {
+      io.to("teacher-" + sender.id + "-student-" + recipient.id).emit(
+        "chat-history-updated",
+        chatHistory
+      );
+    } else {
+      io.to("teacher-" + recipient.id + "-student-" + sender.id).emit(
+        "chat-history-updated",
+        chatHistory
+      );
+    }
   }
 }
 

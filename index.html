@@ -157,61 +157,21 @@
       }
 
       if (window.localStorage) {
-        // initialize user infomation
+        // initialize user's infomation
         userinfo = JSON.parse(window.localStorage.getItem('userinfo'));
         // console.log(userinfo);
         // console.log(typeof userinfo);
-        if (userinfo && userinfo.name) {
-          loginArea.style = 'display: none';
-          messageArea.style = 'display: block';
-          // Add welcome message
-          welcomeArea.style = 'display: block';
-          welcomeMessage.textContent = `Hello, ${userinfo.name}`;
-          socket.emit('fetch-contact-list', userinfo);
+        if (userinfo && userinfo.ws_token) {
+          socket.emit('initialize', userinfo, data => {
+            // console.log(data);
+            loginArea.style = 'display: none';
+            messageArea.style = 'display: block';
+            // Add welcome message
+            welcomeArea.style = 'display: block';
+            welcomeMessage.textContent = `Hello, ${data.name}`;
+            // socket.emit('fetch-contact-list', userinfo);
+          });
         }
-
-        // initialize contact list
-        // let contacts = JSON.parse(window.localStorage.getItem('contacts'));
-        // contactCollection = {};
-        // contactList.innerHTML = '';
-        // // console.log(contacts);
-        // // console.log(typeof contacts);
-        // if (contacts && contacts.length > 0) {
-        //   contacts.forEach(contact => {
-        //     contactCollection[`${contact.type}-${contact.id}`] = contact;
-        //     let contactLi = document.createElement('li');
-        //     contactLi.setAttribute('class', 'collection-item');
-        //     contactLi.innerHTML = `<a href="javascript:void(0)" class="contact-item" data-tag="${contact.type}-${contact.id}"><h6 class="center" contact-id="${contact.id}">${contact.name}</h6></a>`;
-        //     // contactList.insertBefore(contactLi, contactList.lastChild);
-        //     contactList.appendChild(contactLi);
-        //   });
-        //   contactList.childNodes.forEach(li => {
-        //     // li.childNodes[0].onclick = function () {
-        //     li.firstChild.onclick = function () {
-        //       // console.log(this.getAttribute('data-tag'));
-        //       currentContact = contactCollection[this.getAttribute('data-tag')];
-        //       console.log(`Current contact ID: ${currentContact.id}`);
-        //       messageList.innerHTML = '';
-        //       socket.emit('fetch-chat-history', {
-        //         sender: userinfo,
-        //         recipient: currentContact,
-        //       });
-        //     }
-        //   });
-        // }
-
-        // initialize current contact chat history
-        // currentContact = JSON.parse(window.localStorage.getItem('current_contact'));
-        // // console.log(currentContact);
-        // // console.log(typeof currentContact);
-        // if (userinfo && currentContact && currentContact.id) {
-        //   console.log(`Current contact ID: ${currentContact.id}`);
-        //   messageList.innerHTML = '';
-        //   socket.emit('fetch-chat-history', {
-        //     sender: userinfo,
-        //     recipient: currentContact,
-        //   });
-        // }
       }
 
       // Submit login form
@@ -238,18 +198,17 @@
             // confirm(response.message);
           } else {
             userinfo = response.data;
-            // socket.join(userinfo.type + '-' + userinfo.id);
-            // updateContactList(userinfo);
-            if (window.localStorage) {
-              window.localStorage.setItem('userinfo', JSON.stringify(userinfo));
-            } else {
-              userinfoContainer.setAttribute('data-content', JSON.stringify(userinfo));
-            }
             loginArea.style = 'display: none';
             messageArea.style = 'display: block';
             // Add welcome message
             welcomeArea.style = 'display: block';
             welcomeMessage.textContent = `Hello, ${userinfo.name}`;
+            delete userinfo.name;
+            if (window.localStorage) {
+              window.localStorage.setItem('userinfo', JSON.stringify(userinfo));
+            } else {
+              userinfoContainer.setAttribute('data-content', JSON.stringify(userinfo));
+            }
           }
         });
       });
@@ -280,23 +239,6 @@
       });
 
       // Refresh contact list area
-      // function updateContactList(userinfo) {
-      //   // socket.on(userinfo.type + '-' + userinfo.id + '-' + 'contact_list_updated', (contacts) => {
-      //   socket.on('contact_list_updated', (contacts) => {
-      //     // console.log(contacts);
-      //     contactCollection = contacts;
-      //     contactList.innerHTML = '';
-      //     contacts.forEach(contact => {
-      //       let contactLi = document.createElement('li');
-      //       contactLi.setAttribute('class', 'collection-item');
-      //       contactLi.innerHTML = `<h6 class="center" contact-id="${contact.id}">${contact.name}</h6>`;
-      //       contactList.insertBefore(contactLi, contactList.lastChild);
-      //     });
-      //     if (contactCollection.length > 0) {
-      //       currentContact = contactCollection[0];
-      //     }
-      //   });
-      // }
       socket.on('contact_list_updated', (contacts) => {
         // console.log(contacts);
         // console.log(typeof contacts);
