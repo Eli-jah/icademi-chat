@@ -82,8 +82,8 @@ io.on("connection", (socket) => {
   // Initialize to fetch userinfo & contact list
   socket.on("initialize", (userinfo, callback) => {
     if (userinfo.ws_token && users[userinfo.ws_token]) {
+      // console.log(userinfo);
       delete users[userinfo.ws_token];
-      userinfo = {};
       axiosInstance
         .post("ws/refresh_ws_token", {
           ws_token: userinfo.ws_token,
