@@ -81,20 +81,6 @@ io.on("connection", (socket) => {
 
   // Initialize to fetch userinfo & contact list
   socket.on("initialize", (userinfo, callback) => {
-    // console.log(users);
-    if (
-      userinfo.ws_token &&
-      users[userinfo.ws_token] &&
-      typeof callback === "function"
-    ) {
-      userinfo = users[userinfo.ws_token];
-      // console.log(userinfo);
-      callback({
-        name: userinfo.name,
-        ws_token: userinfo.ws_token,
-      });
-      updateContactList(socket, userinfo);
-    }
     if (userinfo.ws_token && users[userinfo.ws_token]) {
       delete users[userinfo.ws_token];
       userinfo = {};
