@@ -162,14 +162,22 @@
         // console.log(userinfo);
         // console.log(typeof userinfo);
         if (userinfo && userinfo.ws_token) {
-          socket.emit('initialize', userinfo, data => {
-            // console.log(data);
-            loginArea.style = 'display: none';
-            messageArea.style = 'display: block';
-            // Add welcome message
-            welcomeArea.style = 'display: block';
-            welcomeMessage.textContent = `Hello, ${data.name}`;
-            // socket.emit('fetch-contact-list', userinfo);
+          socket.emit('initialize', userinfo, response => {
+            // console.log(response);
+            if (response.status == 200) {
+              userinfo = response.data;
+              loginArea.style = 'display: none';
+              messageArea.style = 'display: block';
+              // Add welcome message
+              welcomeArea.style = 'display: block';
+              welcomeMessage.textContent = `Hello, ${userinfo.name}`;
+              delete userinfo.name;
+              if (window.localStorage) {
+                window.localStorage.setItem('userinfo', JSON.stringify(userinfo));
+              } else {
+                userinfoContainer.setAttribute('data-content', JSON.stringify(userinfo));
+              }
+            }
           });
         }
       }

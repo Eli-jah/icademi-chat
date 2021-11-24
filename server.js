@@ -95,6 +95,44 @@ io.on("connection", (socket) => {
       });
       updateContactList(socket, userinfo);
     }
+    if (userinfo.ws_token && users[userinfo.ws_token]) {
+      delete users[userinfo.ws_token];
+      userinfo = {};
+      axiosInstance
+        .post("ws/refresh_ws_token", {
+          ws_token: userinfo.ws_token,
+        })
+        .then(function (response) {
+          // console.log(response.data.data);
+          userinfo = response.data.data;
+          users[userinfo.ws_token] = userinfo;
+          // console.log(users);
+          console.log(`User ${userinfo.name} login.`);
+          updateContactList(socket, userinfo);
+          // Emit login_success
+          // socket.emit('login_success', userinfo);
+          if (typeof callback === "function") {
+            let data = {
+              name: userinfo.name,
+              ws_token: userinfo.ws_token,
+            };
+            callback({
+              status: 200,
+              message: "Success",
+              data: data,
+            });
+          }
+        })
+        .catch(function (error) {
+          console.log(error);
+          if (typeof callback === "function") {
+            callback({
+              status: error.status,
+              message: error.message,
+            });
+          }
+        });
+    }
   });
 
   // Fetch contact list
