@@ -159,6 +159,7 @@
       if (window.localStorage) {
         // initialize user's infomation
         userinfo = JSON.parse(window.localStorage.getItem('userinfo'));
+        window.localStorage.clear();
         // console.log(userinfo);
         // console.log(typeof userinfo);
         if (userinfo && userinfo.ws_token) {
