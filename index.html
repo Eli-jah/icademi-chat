@@ -159,7 +159,6 @@
       if (window.localStorage) {
         // initialize user's infomation
         userinfo = JSON.parse(window.localStorage.getItem('userinfo'));
-        window.localStorage.clear();
         // console.log(userinfo);
         // console.log(typeof userinfo);
         if (userinfo && userinfo.ws_token) {
@@ -178,6 +177,9 @@
               } else {
                 userinfoContainer.setAttribute('data-content', JSON.stringify(userinfo));
               }
+            } else {
+              console.log(response.message);
+              window.localStorage.clear();
             }
           });
         }
