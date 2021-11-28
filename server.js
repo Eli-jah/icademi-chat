@@ -81,9 +81,11 @@ io.on("connection", (socket) => {
 
   // Initialize to fetch userinfo & contact list
   socket.on("initialize", (userinfo, callback) => {
-    if (userinfo.ws_token && users[userinfo.ws_token]) {
+    if (userinfo.ws_token) {
       // console.log(userinfo);
-      delete users[userinfo.ws_token];
+      if (users[userinfo.ws_token]) {
+        delete users[userinfo.ws_token];
+      }
       axiosInstance
         .post("ws/refresh_ws_token", {
           ws_token: userinfo.ws_token,
@@ -141,9 +143,9 @@ io.on("connection", (socket) => {
         })
         .then(function (response) {
           // console.log(response.data.data);
-          console.log(
-            `Message sent to ${recipient.name} by ${sender.name}: ${message}`
-          );
+          // console.log(
+          //   `Message sent to ${recipient.name} by ${sender.name}: ${message}`
+          // );
           if (typeof callback === "function") {
             callback({
               status: 200,

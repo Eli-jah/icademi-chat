@@ -113,29 +113,6 @@
     crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <script>
     (function () {
-      let url = new URL(window.location);
-      let hasQueryString = false;
-      if (url.searchParams.has('ws_token')) {
-        hasQueryString = true;
-        let userinfo = {
-          ws_token: url.searchParams.get('ws_token'),
-        };
-        if (window.localStorage) {
-          window.localStorage.setItem('userinfo', JSON.stringify(userinfo));
-        }
-        url.searchParams.delete('ws_token');
-      }
-      if (url.searchParams.has('current_contact_tag')) {
-        hasQueryString = true;
-        if (window.localStorage) {
-          window.localStorage.setItem('current_contact_tag', url.searchParams.get('current_contact_tag'));
-        }
-        url.searchParams.delete('current_contact_tag');
-      }
-      if (hasQueryString) {
-        window.location = url.toString();
-      }
-
       // axios
       // const axios = require('axios');
 
@@ -177,6 +154,50 @@
       if (socket !== undefined) {
         // console.log(socket);
         console.log('Connected to socket ...');
+      }
+
+      let url = new URL(window.location);
+      let hasQueryString = false;
+      if (url.searchParams.has('ws_token')) {
+        hasQueryString = true;
+        userinfo = {
+          ws_token: url.searchParams.get('ws_token'),
+        };
+        if (window.localStorage) {
+          window.localStorage.setItem('userinfo', JSON.stringify(userinfo));
+        }
+        url.searchParams.delete('ws_token');
+      }
+      if (url.searchParams.has('current_contact_tag')) {
+        // hasQueryString = true;
+        currentContactTag = url.searchParams.get('current_contact_tag');
+        if (window.localStorage) {
+          window.localStorage.setItem('current_contact_tag', currentContactTag);
+        }
+        url.searchParams.delete('current_contact_tag');
+      }
+      if (hasQueryString) {
+        window.location = url.toString();
+        socket.emit('initialize', userinfo, response => {
+          // console.log(response);
+          if (response.status == 200) {
+            userinfo = response.data;
+            loginArea.style = 'display: none';
+            messageArea.style = 'display: block';
+            // Add welcome message
+            welcomeArea.style = 'display: block';
+            welcomeMessage.textContent = `Hello, ${userinfo.name}`;
+            delete userinfo.name;
+            if (window.localStorage) {
+              window.localStorage.setItem('userinfo', JSON.stringify(userinfo));
+            } else {
+              userinfoContainer.setAttribute('data-content', JSON.stringify(userinfo));
+            }
+          } else {
+            console.log(response.message);
+            window.localStorage.clear();
+          }
+        });
       }
 
       if (window.localStorage) {
@@ -310,7 +331,11 @@
           // li.childNodes[0].onclick = function () {
           li.firstChild.onclick = function () {
             // console.log(this.getAttribute('data-tag'));
-            currentContact = contactCollection[this.getAttribute('data-tag')];
+            currentContactTag = this.getAttribute('data-tag');
+            currentContact = contactCollection[currentContactTag];
+            if (window.localStorage) {
+              window.localStorage.setItem('current_contact_tag', currentContactTag);
+            }
             console.log(`Current contact ID: ${currentContact.id}`);
             // if (window.localStorage) {
             //   window.localStorage.setItem('current_contact', JSON.stringify(currentContact));
