@@ -331,20 +331,22 @@
           // li.childNodes[0].onclick = function () {
           li.firstChild.onclick = function () {
             // console.log(this.getAttribute('data-tag'));
-            currentContactTag = this.getAttribute('data-tag');
-            currentContact = contactCollection[currentContactTag];
-            if (window.localStorage) {
-              window.localStorage.setItem('current_contact_tag', currentContactTag);
+            if (currentContactTag != this.getAttribute('data-tag')) {
+              currentContactTag = this.getAttribute('data-tag');
+              currentContact = contactCollection[currentContactTag];
+              if (window.localStorage) {
+                window.localStorage.setItem('current_contact_tag', currentContactTag);
+              }
+              console.log(`Current contact ID: ${currentContact.id}`);
+              // if (window.localStorage) {
+              //   window.localStorage.setItem('current_contact', JSON.stringify(currentContact));
+              // }
+              messageList.innerHTML = '';
+              socket.emit('fetch-chat-history', {
+                sender: userinfo,
+                recipient: currentContact,
+              });
             }
-            console.log(`Current contact ID: ${currentContact.id}`);
-            // if (window.localStorage) {
-            //   window.localStorage.setItem('current_contact', JSON.stringify(currentContact));
-            // }
-            messageList.innerHTML = '';
-            socket.emit('fetch-chat-history', {
-              sender: userinfo,
-              recipient: currentContact,
-            });
           }
         });
       });
