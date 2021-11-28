@@ -113,6 +113,29 @@
     crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <script>
     (function () {
+      let url = new URL(window.location);
+      let hasQueryString = false;
+      if (url.searchParams.has('ws_token')) {
+        hasQueryString = true;
+        let userinfo = {
+          ws_token: url.searchParams.get('ws_token'),
+        };
+        if (window.localStorage) {
+          window.localStorage.setItem('userinfo', JSON.stringify(userinfo));
+        }
+        url.searchParams.delete('ws_token');
+      }
+      if (url.searchParams.has('current_contact_tag')) {
+        hasQueryString = true;
+        if (window.localStorage) {
+          window.localStorage.setItem('current_contact_tag', url.searchParams.get('current_contact_tag'));
+        }
+        url.searchParams.delete('current_contact_tag');
+      }
+      if (hasQueryString) {
+        window.location = url.toString();
+      }
+
       // axios
       // const axios = require('axios');
 
@@ -142,7 +165,7 @@
         // }
       });
 
-      let userinfo, contactCollection, currentContact;
+      let userinfo, contactCollection, currentContactTag, currentContact;
 
       // Connect to socket.io
       let socket = io({
@@ -159,6 +182,7 @@
       if (window.localStorage) {
         // initialize user's infomation
         userinfo = JSON.parse(window.localStorage.getItem('userinfo'));
+        currentContactTag = window.localStorage.getItem('current_contact_tag');
         // console.log(userinfo);
         // console.log(typeof userinfo);
         if (userinfo && userinfo.ws_token) {
@@ -266,8 +290,12 @@
           // contactList.insertBefore(contactLi, contactList.lastChild);
           contactList.appendChild(contactLi);
         });
-        if (contacts.length > 0) {
+        if (currentContactTag) {
+          currentContact = contactCollection[currentContactTag];
+        } else if (contacts.length > 0) {
           currentContact = contacts[0];
+        }
+        if (currentContact) {
           console.log(`Current contact ID: ${currentContact.id}`);
           // if (window.localStorage) {
           //   window.localStorage.setItem('current_contact', JSON.stringify(currentContact));
